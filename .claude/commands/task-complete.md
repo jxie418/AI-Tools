@@ -91,6 +91,7 @@ When entire task is complete:
 2. Update agent-state.md (move agents to completed)
 3. Optionally archive design documents
 4. Report completion summary
+5. **IMPORTANT**: Remind user to run `/clear` or `/compact` to save tokens
 
 ### 6. Next Steps
 
@@ -120,6 +121,14 @@ All sub-tasks finished:
 - [x] Address review comments
 
 Task moved to Completed Tasks section.
+
+## Save Tokens
+
+Run one of these commands to clear context and save tokens:
+- /clear   - Clear conversation history completely
+- /compact - Summarize and compact the conversation
+
+## Next
 
 Start a new task: /task new radar://ID description
 ```
