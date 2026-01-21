@@ -3,9 +3,9 @@
 # Claude Code Task Workflow Installer
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/<your-repo>/main/.claude/install.sh | bash
-#   or
-#   ./install.sh /path/to/target/project
+#   ./install.sh /path/to/target/project [--prefix jira]
+#   ./install.sh /path/to/target/project --prefix ticket
+#   curl -fsSL https://raw.githubusercontent.com/<your-repo>/main/.claude/install.sh | bash -s -- --prefix jira
 
 set -e
 
@@ -13,20 +13,54 @@ set -e
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
+
+# Default task prefix
+TASK_PREFIX="radar"
+
+# Parse arguments
+TARGET_DIR=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --prefix|-p)
+            TASK_PREFIX="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Usage: ./install.sh [target_directory] [--prefix PREFIX]"
+            echo ""
+            echo "Options:"
+            echo "  --prefix, -p    Task ID prefix (default: radar)"
+            echo "                  Examples: jira, ticket, issue, task, bug"
+            echo ""
+            echo "Examples:"
+            echo "  ./install.sh /path/to/project"
+            echo "  ./install.sh /path/to/project --prefix jira"
+            echo "  ./install.sh . --prefix ticket"
+            exit 0
+            ;;
+        *)
+            if [ -z "$TARGET_DIR" ]; then
+                TARGET_DIR="$1"
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Default target directory to current if not specified
+if [ -z "$TARGET_DIR" ]; then
+    TARGET_DIR="$(pwd)"
+fi
 
 echo -e "${GREEN}Claude Code Task Workflow Installer${NC}"
 echo "======================================"
+echo -e "Task prefix: ${CYAN}${TASK_PREFIX}://${NC}"
+echo ""
 
 # Determine source directory (where this script lives)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Determine target directory
-if [ -n "$1" ]; then
-    TARGET_DIR="$1"
-else
-    TARGET_DIR="$(pwd)"
-fi
 
 # Check if target is a git repo
 if [ ! -d "$TARGET_DIR/.git" ]; then
@@ -46,9 +80,15 @@ mkdir -p "$TARGET_DIR/.claude/test-plans"
 mkdir -p "$TARGET_DIR/.claude/codereview"
 mkdir -p "$TARGET_DIR/.claude/scripts"
 
-# Copy command files
-echo -e "${GREEN}Copying task workflow commands...${NC}"
-cp "$SCRIPT_DIR/commands/"*.md "$TARGET_DIR/.claude/commands/" 2>/dev/null || true
+# Copy and transform command files (replace radar:// with custom prefix)
+echo -e "${GREEN}Copying task workflow commands (prefix: ${TASK_PREFIX}://)...${NC}"
+for file in "$SCRIPT_DIR/commands/"*.md; do
+    if [ -f "$file" ]; then
+        filename=$(basename "$file")
+        # Replace radar:// with custom prefix
+        sed "s/radar:\/\//${TASK_PREFIX}:\/\//g" "$file" > "$TARGET_DIR/.claude/commands/$filename"
+    fi
+done
 
 # Copy scripts
 echo -e "${GREEN}Copying automation scripts...${NC}"
@@ -56,17 +96,17 @@ cp "$SCRIPT_DIR/scripts/"*.js "$TARGET_DIR/.claude/scripts/" 2>/dev/null || true
 cp "$SCRIPT_DIR/scripts/"*.sh "$TARGET_DIR/.claude/scripts/" 2>/dev/null || true
 cp "$SCRIPT_DIR/scripts/package.json" "$TARGET_DIR/.claude/scripts/" 2>/dev/null || true
 
-# Copy template files
+# Copy and transform template files
 echo -e "${GREEN}Creating template files...${NC}"
 
-# Tasks.md
-cat > "$TARGET_DIR/.claude/Tasks.md" << 'EOF'
+# Tasks.md with custom prefix
+cat > "$TARGET_DIR/.claude/Tasks.md" << EOF
 # Tasks
 
 <!--
 Task tracking file for Claude Code workflow.
 Format:
-- [ ] radar://ID - Task Title (main task)
+- [ ] ${TASK_PREFIX}://ID - Task Title (main task)
   - [x] Sub-task completed
   - [ ] Sub-task pending
 
@@ -104,8 +144,13 @@ Format: agent-<name> | <task-id> | <status> | <started/completed>
 <!-- Messages between agents -->
 EOF
 
-# Copy README
-cp "$SCRIPT_DIR/WORKFLOW_README.md" "$TARGET_DIR/.claude/" 2>/dev/null || true
+# Copy and transform README
+if [ -f "$SCRIPT_DIR/WORKFLOW_README.md" ]; then
+    sed "s/radar:\/\//${TASK_PREFIX}:\/\//g" "$SCRIPT_DIR/WORKFLOW_README.md" > "$TARGET_DIR/.claude/WORKFLOW_README.md"
+fi
+
+# Save the prefix configuration
+echo "$TASK_PREFIX" > "$TARGET_DIR/.claude/.task-prefix"
 
 # Make scripts executable
 chmod +x "$TARGET_DIR/.claude/scripts/"*.sh 2>/dev/null || true
@@ -137,8 +182,10 @@ echo "  .claude/test-plans/   - Manual test plans"
 echo "  .claude/Tasks.md      - Task tracking"
 echo "  .claude/agent-state.md - Agent coordination"
 echo ""
+echo -e "${GREEN}Task Prefix:${NC} ${CYAN}${TASK_PREFIX}://${NC}"
+echo ""
 echo -e "${GREEN}Quick Start:${NC}"
-echo "  /task radar://123456 Your task description"
+echo "  /task ${TASK_PREFIX}://123456 Your task description"
 echo "  /task                 # Resume incomplete task"
 echo "  /task status          # Check current status"
 echo ""

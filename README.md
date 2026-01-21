@@ -10,15 +10,21 @@ Claude Code Task Workflow - A comprehensive automation system for software devel
 # Clone the repo
 git clone https://github.com/jxie418/AI-Tools.git
 
-# Install to your project
+# Install to your project (default prefix: radar://)
 ./AI-Tools/.claude/install.sh /path/to/your/project
+
+# Or with custom prefix (jira://, ticket://, issue://, etc.)
+./AI-Tools/.claude/install.sh /path/to/your/project --prefix jira
 ```
 
 ### Option 2: One-Line Install from GitHub
 
 ```bash
-# Install directly to current directory
+# Install with default prefix (radar://)
 curl -fsSL https://raw.githubusercontent.com/jxie418/AI-Tools/main/.claude/install.sh | bash
+
+# Install with custom prefix
+curl -fsSL https://raw.githubusercontent.com/jxie418/AI-Tools/main/.claude/install.sh | bash -s -- --prefix jira
 ```
 
 ### Option 3: Manual Copy
@@ -31,6 +37,26 @@ cp -r AI-Tools/.claude /path/to/your/project/
 cd /path/to/your/project/.claude/scripts
 npm install
 ```
+
+## Custom Task Prefix
+
+The default task prefix is `radar://` but you can customize it during installation:
+
+```bash
+# Use JIRA-style prefix
+./install.sh /path/to/project --prefix jira
+# Usage: /task jira://PROJECT-123 Add feature
+
+# Use ticket prefix
+./install.sh /path/to/project --prefix ticket
+# Usage: /task ticket://12345 Fix bug
+
+# Use issue prefix
+./install.sh /path/to/project --prefix issue
+# Usage: /task issue://456 Update docs
+```
+
+Supported prefix examples: `radar`, `jira`, `ticket`, `issue`, `task`, `bug`, `story`, or any custom string.
 
 ## What Gets Installed
 
