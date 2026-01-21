@@ -1,0 +1,16 @@
+{
+  "name": "claude-code-workflow-scripts",
+  "version": "1.0.0",
+  "description": "Automation scripts for Claude Code workflow",
+  "type": "module",
+  "scripts": {
+    "install-deps": "npm install"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
