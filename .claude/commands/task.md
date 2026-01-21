@@ -12,6 +12,8 @@ Parse the arguments and route to the appropriate sub-command:
 | Command | Action |
 |---------|--------|
 | (empty) | Auto-resume: Read `.claude/Tasks.md`, find first incomplete task, continue workflow |
+| `new radar://ID <description>` | Create new task, branch, and add to Tasks.md |
+| `radar://ID <description>` | Shorthand for `new` - create new task |
 | `requirements` | Deep requirements gathering - ask comprehensive questions upfront |
 | `design` | Create system design document with architecture and API contracts |
 | `implement [--no-confirm]` | Implement code (--no-confirm skips confirmations for simple decisions) |
@@ -28,7 +30,6 @@ Parse the arguments and route to the appropriate sub-command:
 | `performance` | Performance review/optimization |
 | `status` | Show current task and agent status |
 | `parallel <cmd1> <cmd2>` | Run multiple sub-tasks in parallel |
-| `<radar://ID> <description>` | Start new task with given ID |
 
 ## Auto-Resume Logic
 
@@ -40,12 +41,22 @@ When no arguments provided:
 
 ## New Task Logic
 
-When argument starts with `radar://`:
+When argument starts with `radar://` or `new radar://`:
 1. Extract radar ID from argument
 2. Check if task exists in Tasks.md
-3. If not, add new task entry
+3. If not, add new task entry with sub-tasks:
+   - [ ] Create branch
+   - [ ] Gather requirements
+   - [ ] Create system design
+   - [ ] Implement solution
+   - [ ] Write unit tests
+   - [ ] Create manual test plan
+   - [ ] Run quality checks
+   - [ ] Create PR
+   - [ ] Address review comments
 4. Run: `git checkout main && git pull origin main && git checkout -b radar_<ID>`
-5. Proceed to requirements gathering
+5. Mark "Create branch" as complete
+6. Proceed to requirements gathering
 
 ## Permissions
 
@@ -68,13 +79,14 @@ Based on the arguments, execute the appropriate workflow:
 5. Update Tasks.md on completion
 ```
 
-### If new task (radar://...):
+### If new task (radar://... or new radar://...):
 ```
 1. Parse radar ID
 2. Add to Tasks.md if not exists
-3. Create branch
-4. Start requirements gathering
-5. Update Tasks.md progress
+3. Create branch from main
+4. Mark branch creation complete
+5. Start requirements gathering
+6. Update Tasks.md progress
 ```
 
 ### If sub-command:
