@@ -29,6 +29,7 @@ Parse the arguments and route to the appropriate sub-command:
 | `security` | Security review of changes |
 | `performance` | Performance review/optimization |
 | `status` | Show current task and agent status |
+| `complete [item]` | Mark current sub-task or specified item as done |
 | `parallel <cmd1> <cmd2>` | Run multiple sub-tasks in parallel |
 
 ## Auto-Resume Logic
